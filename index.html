@@ -218,32 +218,26 @@
                  summarizeBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
 
                  try {
-                     const prompt = `متن زیر را به فارسی و به صورت خلاصه (حداکثر 5 خط) برای یک خبرنامه مختصر و مفید بازنویسی کن. فقط متن خلاصه را ارائه بده و از هیچ مقدمه یا موخره ای استفاده نکن:\n\n${article.content}`;
-                     const apiKey = ""; /* در این نسخه API_KEY خالی است و نیاز به بک‌اند Netlify Function برای عملکرد دارد. */
-                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                     const articleContent = article.content; // محتوای مقاله را برای خلاصه‌سازی ارسال می‌کنیم.
+                     // آدرس Netlify Function ما. این آدرس به صورت خودکار توسط Netlify ایجاد می‌شود.
+                     const functionUrl = '/.netlify/functions/summarize-news'; 
 
-                     const payload = { 
-                         contents: [{ role: "user", parts: [{ text: prompt }] }]
-                     };
-                     
-                     const response = await fetch(apiUrl, {
+                     const response = await fetch(functionUrl, {
                          method: 'POST',
                          headers: { 'Content-Type': 'application/json' },
-                         body: JSON.stringify(payload),
+                         body: JSON.stringify({ articleContent }), // محتوای مقاله را در بدنه درخواست ارسال می‌کنیم.
                      });
 
                      if (!response.ok) {
                          const errorData = await response.json();
-                         throw new Error(errorData.error.message || 'دریافت خلاصه از API با خطا مواجه شد');
+                         throw new Error(errorData.error.message || 'دریافت خلاصه از Netlify Function با خطا مواجه شد');
                      }
 
                      const result = await response.json();
-                     if (result.candidates && result.candidates.length > 0 && 
-                         result.candidates[0].content && result.candidates[0].content.parts &&
-                         result.candidates[0].content.parts.length > 0) {
-                         summaryOutput.innerHTML = `<div class="bg-blue-50 p-4 rounded-lg border border-blue-200 mt-4"><p class="font-bold">خلاصه هوش مصنوعی:</p><p>${result.candidates[0].content.parts[0].text}</p></div>`;
+                     if (result.summary) {
+                         summaryOutput.innerHTML = `<div class="bg-blue-50 p-4 rounded-lg border border-blue-200 mt-4"><p class="font-bold">خلاصه هوش مصنوعی:</p><p>${result.summary}</p></div>`;
                      } else {
-                         throw new Error('خلاصه‌ای از API دریافت نشد.');
+                         throw new Error('خلاصه‌ای از Function دریافت نشد.');
                      }
                  } catch (error) {
                      summaryErrorDiv.innerHTML = `<div class="bg-red-50 p-4 rounded-lg border border-red-200 mt-4">خطا در خلاصه‌سازی: ${error.message}. لطفاً از تنظیم بودن Netlify Function و API Key اطمینان حاصل کنید.</div>`;
