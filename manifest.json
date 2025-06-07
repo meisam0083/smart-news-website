@@ -1,0 +1,21 @@
+{
+  "name": "اخبار هوشمند",
+  "short_name": "اخبار هوشمند",
+  "description": "داشبورد تحلیل هوشمند اخبار و خلاصه‌سازی با هوش مصنوعی",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F8F7F4",
+  "theme_color": "#285F47",
+  "icons": [
+    {
+      "src": "/images/icons/my-app-icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/images/icons/my-app-icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
