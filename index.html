@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تحلیل هوشمند اخبار</title>
-    <!-- Chosen Palette: Warm Neutrals & Soothing Green -->
-    <!-- Application Structure Plan: A two-column responsive layout. The left column contains navigation filters (categories and a search bar) and an interactive doughnut chart for a visual overview. The right column is the main content area, displaying either a grid of news articles or the full details of a selected article. This master-detail structure is user-friendly, separates navigation from content, and allows for quick filtering and exploration within a single page, enhancing usability. -->
-    <!-- Visualization & Content Choices: 
-        - Report Info: News articles with categories. Goal: Provide a high-level summary of content distribution. Viz/Presentation: Doughnut chart (Chart.js/Canvas) showing article counts per category. Interaction: Clicking a chart segment filters the article list in the right column. Justification: Offers a quick, visual, and engaging way to navigate and filter the content. Library: Chart.js.
-        - Report Info: List of all articles. Goal: Allow users to browse and select news. Viz/Presentation: Responsive grid of article cards (HTML/Tailwind). Interaction: Clicking a card shows the full article detail. Justification: A familiar and effective pattern for browsing content. Library: Vanilla JS.
-        - Report Info: Full article content. Goal: Allow in-depth reading. Viz/Presentation: A clean, readable, single-column view for the article text and image. Interaction: A 'Back' button to return to the list. Justification: Focuses the user's attention on the content without distractions. Library: Vanilla JS.
+    <!-- پالت رنگی انتخاب شده: رنگ‌های خنثی گرم و سبز آرامش‌بخش -->
+    <!-- طرح‌بندی ساختار برنامه: طرح‌بندی واکنش‌گرا دو ستونی. ستون سمت راست شامل فیلترهای ناوبری (دسته‌بندی‌ها و نوار جستجو) و یک نمودار دونات تعاملی برای نمای کلی بصری. ستون سمت چپ ناحیه محتوای اصلی است که یا یک گرید از مقالات خبری یا جزئیات کامل مقاله انتخاب شده را نمایش می‌دهد. این ساختار اصلی-جزئی کاربرپسند است، ناوبری را از محتوا جدا می‌کند، و امکان فیلتر سریع و کاوش را در یک صفحه واحد فراهم می‌کند، که باعث بهبود قابلیت استفاده می‌شود. -->
+    <!-- انتخاب بصری‌سازی و محتوا:
+        - اطلاعات گزارش: مقالات خبری با دسته‌بندی‌ها. هدف: ارائه خلاصه‌ای سطح بالا از توزیع محتوا. بصری‌سازی/ارائه: نمودار دونات (Chart.js/Canvas) که تعداد مقالات را بر اساس دسته‌بندی نشان می‌دهد. تعامل: کلیک روی یک بخش از نمودار، لیست مقالات را در ستون سمت چپ فیلتر می‌کند. توجیه: راهی سریع، بصری و جذاب برای ناوبری و فیلتر کردن محتوا ارائه می‌دهد. کتابخانه: Chart.js.
+        - اطلاعات گزارش: لیست همه مقالات. هدف: امکان مرور و انتخاب اخبار برای کاربران. بصری‌سازی/ارائه: گرید واکنش‌گرا از کارت‌های مقاله (HTML/Tailwind). تعامل: کلیک روی یک کارت، جزئیات کامل مقاله را نمایش می‌دهد. توجیه: یک الگوی آشنا و موثر برای مرور محتوا. کتابخانه: جاوااسکریپت خالص (Vanilla JS).
+        - اطلاعات گزارش: محتوای کامل مقاله. هدف: امکان مطالعه عمیق. بصری‌سازی/ارائه: نمای تمیز و خوانا و تک ستونی برای متن و تصویر مقاله. تعامل: یک دکمه 'بازگشت' برای بازگشت به لیست. توجیه: توجه کاربر را بدون حواس‌پرتی روی محتوا متمرکز می‌کند. کتابخانه: جاوااسکریپت خالص (Vanilla JS).
     -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <!-- تأیید: هیچ گرافیک SVG استفاده نشده است. هیچ کتابخانه Mermaid JS استفاده نشده است. -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -186,14 +186,67 @@
                     </div>
                     <img class="rounded-xl w-full h-80 object-cover mb-8 shadow-lg" src="${article.imageUrl}" alt="${article.title}">
                     <div class="prose max-w-none">
-                        ${article.content}
+                        ${marked.parse(article.content)}
                     </div>
+                     <button id="summarize-button" class="mt-6 bg-blue-600 text-white py-2 px-5 rounded-lg hover:bg-blue-700 transition-colors">خلاصه‌سازی با هوش مصنوعی</button>
+                    <div id="summary-output" class="mt-4 text-gray-700"></div>
+                     <div id="summary-error" class="text-red-500 text-sm mt-2"></div>
                 </article>
             `;
             document.getElementById('back-button').addEventListener('click', () => {
                 displayArticles(newsData);
                 updateActiveFilter('all');
             });
+
+            document.getElementById('summarize-button').addEventListener('click', async () => {
+                 const summarizeBtn = document.getElementById('summarize-button');
+                 const summaryOutput = document.getElementById('summary-output');
+                 const summaryErrorDiv = document.getElementById('summary-error');
+
+                 summaryOutput.innerHTML = '';
+                 summaryErrorDiv.innerHTML = '';
+                 summarizeBtn.disabled = true;
+                 summarizeBtn.textContent = 'در حال خلاصه‌سازی...';
+                 summarizeBtn.classList.add('bg-gray-400');
+                 summarizeBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+
+                 try {
+                     const prompt = `متن زیر را به فارسی و به صورت خلاصه (حداکثر 5 خط) برای یک خبرنامه مختصر و مفید بازنویسی کن. فقط متن خلاصه را ارائه بده و از هیچ مقدمه یا موخره ای استفاده نکن:\n\n${article.content}`;
+                     const apiKey = ""; /* در این نسخه API_KEY خالی است و نیاز به بک‌اند Netlify Function برای عملکرد دارد. */
+                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                     const payload = { 
+                         contents: [{ role: "user", parts: [{ text: prompt }] }]
+                     };
+                     
+                     const response = await fetch(apiUrl, {
+                         method: 'POST',
+                         headers: { 'Content-Type': 'application/json' },
+                         body: JSON.stringify(payload),
+                     });
+
+                     if (!response.ok) {
+                         const errorData = await response.json();
+                         throw new Error(errorData.error.message || 'دریافت خلاصه از API با خطا مواجه شد');
+                     }
+
+                     const result = await response.json();
+                     if (result.candidates && result.candidates.length > 0 && 
+                         result.candidates[0].content && result.candidates[0].content.parts &&
+                         result.candidates[0].content.parts.length > 0) {
+                         summaryOutput.innerHTML = `<div class="bg-blue-50 p-4 rounded-lg border border-blue-200 mt-4"><p class="font-bold">خلاصه هوش مصنوعی:</p><p>${result.candidates[0].content.parts[0].text}</p></div>`;
+                     } else {
+                         throw new Error('خلاصه‌ای از API دریافت نشد.');
+                     }
+                 } catch (error) {
+                     summaryErrorDiv.innerHTML = `<div class="bg-red-50 p-4 rounded-lg border border-red-200 mt-4">خطا در خلاصه‌سازی: ${error.message}. لطفاً از تنظیم بودن Netlify Function و API Key اطمینان حاصل کنید.</div>`;
+                 } finally {
+                     summarizeBtn.disabled = false;
+                     summarizeBtn.textContent = 'خلاصه‌سازی با هوش مصنوعی';
+                     summarizeBtn.classList.remove('bg-gray-400');
+                     summarizeBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                 }
+             });
         }
 
         /* تابع برای ساخت دکمه‌های فیلتر */
@@ -217,7 +270,7 @@
                     btn.classList.remove('bg-gray-200', 'text-gray-800', 'hover:bg-green-200');
                     btn.classList.add('bg-green-600', 'text-white');
                 } else {
-                    btn.classList.remove('bg-green-600', 'text-white');
+                    btn.classList.remove('bg-gray-200', 'text-gray-800', 'hover:bg-green-200');
                     btn.classList.add('bg-gray-200', 'text-gray-800', 'hover:bg-green-200');
                 }
             });
@@ -238,7 +291,7 @@
             const term = searchTerm.toLowerCase();
             const filteredArticles = newsData.filter(a => a.title.toLowerCase().includes(term));
             displayArticles(filteredArticles);
-            updateActiveFilter(null); /* چون جستجو فعال است، هیچ دسته‌بندی فعال نیست */
+            updateActiveFilter(null); 
         }
 
         /* تابع برای ساخت نمودار */
@@ -296,7 +349,6 @@
                 }
             });
         }
-
 
         /* راه‌اندازی اولیه برنامه */
         document.addEventListener('DOMContentLoaded', () => {
