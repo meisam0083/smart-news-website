@@ -48,7 +48,7 @@
     <!-- مسیر آیکون برای دستگاه‌های اپل (برای افزودن به صفحه اصلی) -->
     <link rel="apple-touch-icon" href="/images/icons/my-app-icon.png">
     <!-- لینک به فایل Manifest برای قابلیت PWA و نمایش آیکون روی صفحه اصلی گوشی (با کش باستینگ) -->
-    <link rel="manifest" href="/manifest.json?v=1717904000"> <!-- این عدد (timestamp) را هر بار که آیکون یا manifest.json را تغییر می‌دهید، به یک عدد جدید تغییر دهید -->
+    <link rel="manifest" href="/manifest.json?v=1717912900"> <!-- این عدد (timestamp) را هر بار که آیکون یا manifest.json را تغییر می‌دهید، به یک عدد جدید تغییر دهید -->
 
 </head>
 <body class="text-gray-800">
@@ -272,7 +272,7 @@
                     btn.classList.add('bg-green-600', 'text-white');
                 } else {
                     btn.classList.remove('bg-gray-200', 'text-gray-800', 'hover:bg-green-200');
-                    btn.classList.add('bg-gray-200', 'text-gray-800', 'hover:bg-green-200');
+                    btn.classList.add('gray-200', 'text-gray-800', 'hover:bg-green-200');
                 }
             });
         }
@@ -282,7 +282,15 @@
             searchInput.value = '';
             const filteredArticles = category === 'all' 
                 ? newsData 
-                : newsData.filter(a => a.title.toLowerCase().includes(term));
+                : newsData.filter(a => a.category === category);
+            displayArticles(filteredArticles);
+            updateActiveFilter(category);
+        }
+
+        /* تابع برای فیلتر کردن بر اساس جستجو */
+        function filterBySearch(searchTerm) {
+            const term = searchTerm.toLowerCase();
+            const filteredArticles = newsData.filter(a => a.title.toLowerCase().includes(term));
             displayArticles(filteredArticles);
             updateActiveFilter(null); 
         }
