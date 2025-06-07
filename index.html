@@ -47,8 +47,8 @@
     <link rel="icon" href="/images/icons/my-app-icon.png" type="image/png"> 
     <!-- مسیر آیکون برای دستگاه‌های اپل (برای افزودن به صفحه اصلی) -->
     <link rel="apple-touch-icon" href="/images/icons/my-app-icon.png">
-    <!-- مثال: اگر یک فایل favicon.ico دارید، می‌توانید این خط را هم اضافه کنید -->
-    <!-- <link rel="icon" href="/images/icons/favicon.ico" type="image/x-icon"> -->
+    <!-- لینک به فایل Manifest برای قابلیت PWA و نمایش آیکون روی صفحه اصلی گوشی -->
+    <link rel="manifest" href="/manifest.json">
 
 </head>
 <body class="text-gray-800">
@@ -218,14 +218,14 @@
                  summarizeBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
 
                  try {
-                     const articleContent = article.content; // محتوای مقاله را برای خلاصه‌سازی ارسال می‌کنیم.
-                     // آدرس Netlify Function ما. این آدرس به صورت خودکار توسط Netlify ایجاد می‌شود.
+                     const articleContent = article.content; /* محتوای مقاله را برای خلاصه‌سازی ارسال می‌کنیم. */
+                     /* آدرس Netlify Function ما. این آدرس به صورت خودکار توسط Netlify ایجاد می‌شود. */
                      const functionUrl = '/.netlify/functions/summarize-news'; 
 
                      const response = await fetch(functionUrl, {
                          method: 'POST',
                          headers: { 'Content-Type': 'application/json' },
-                         body: JSON.stringify({ articleContent }), // محتوای مقاله را در بدنه درخواست ارسال می‌کنیم.
+                         body: JSON.stringify({ articleContent }), /* محتوای مقاله را در بدنه درخواست ارسال می‌کنیم. */
                      });
 
                      if (!response.ok) {
@@ -282,15 +282,7 @@
             searchInput.value = '';
             const filteredArticles = category === 'all' 
                 ? newsData 
-                : newsData.filter(a => a.category === category);
-            displayArticles(filteredArticles);
-            updateActiveFilter(category);
-        }
-
-        /* تابع برای فیلتر کردن بر اساس جستجو */
-        function filterBySearch(searchTerm) {
-            const term = searchTerm.toLowerCase();
-            const filteredArticles = newsData.filter(a => a.title.toLowerCase().includes(term));
+                : newsData.filter(a => a.title.toLowerCase().includes(term));
             displayArticles(filteredArticles);
             updateActiveFilter(null); 
         }
