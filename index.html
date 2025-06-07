@@ -43,6 +43,12 @@
             margin-bottom: 1em;
         }
     </style>
+    <!-- مسیرهای جدید برای آیکون‌ها: فرض بر این است که فایل‌های آیکون شما در پوشه images/icons قرار دارند. -->
+    <link rel="icon" href="/images/icons/my-app-icon.png" type="image/png">
+    <link rel="apple-touch-icon" href="/images/icons/my-app-icon.png">
+    <!-- اگر favicon.ico داری، می‌تونی این خط رو هم اضافه کنی: -->
+    <!-- <link rel="icon" href="/images/icons/favicon.ico" type="image/x-icon"> -->
+
 </head>
 <body class="text-gray-800">
 
@@ -350,7 +356,6 @@
             });
         }
 
-        /* راه‌اندازی اولیه برنامه */
         document.addEventListener('DOMContentLoaded', () => {
             displayArticles(newsData);
             createCategoryFilters();
