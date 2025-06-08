@@ -1,11 +1,11 @@
 {
-  "name": "اخبار هوشمند",
-  "short_name": "اخبار",
-  "description": "داشبورد تحلیل هوشمند اخبار و خلاصه‌سازی با هوش مصنوعی",
+  "name": "داشبورد ترندها",
+  "short_name": "ترندها",
+  "description": "کاوش در موضوعات پرطرفدار و ترندهای روز",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#F8F7F4",
-  "theme_color": "#285F47",
+  "theme_color": "#2196F3",
   "icons": [
     {
       "src": "/images/icons/my-app-icon.png",
