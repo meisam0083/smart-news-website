@@ -1,7 +1,7 @@
 {
-  "name": "smart-news-website",
+  "name": "smart-trends-website",
   "version": "1.0.0",
-  "description": "Smart News Website with AI Summarization and Firestore",
+  "description": "Smart Trends Website fetching data from Netlify Function",
   "main": "index.js",
   "scripts": {
     "start": "netlify dev"
@@ -10,8 +10,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@google/generative-ai": "^0.15.0",
-    "firebase": "^10.12.2",
     "axios": "^1.6.2"
   },
   "devDependencies": {
