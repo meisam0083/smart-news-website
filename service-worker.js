@@ -1,8 +1,8 @@
 // service-worker.js
 // این فایل مسئول کش کردن منابع برنامه برای کار آفلاین و بهبود عملکرد است.
 
-// نام کش فعلی. هر زمان که فایل‌های ثابت (مانند index.html, manifest.json, icons) تغییر کردند، این نام را به 'smart-trends-cache-v6', 'smart-trends-cache-v7' و ... تغییر دهید تا کش‌های قدیمی پاک شوند.
-const CACHE_NAME = 'smart-trends-cache-v5'; 
+// نام کش فعلی. هر زمان که فایل‌های ثابت (مانند index.html, manifest.json, icons) تغییر کردند، این نام را به 'smart-trends-cache-v7', 'smart-trends-cache-v8' و ... تغییر دهید تا کش‌های قدیمی پاک شوند.
+const CACHE_NAME = 'smart-trends-cache-v6'; 
 
 // لیستی از URL هایی که می‌خواهیم کش شوند.
 const urlsToCache = [
