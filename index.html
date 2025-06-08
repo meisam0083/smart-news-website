@@ -3,33 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تحلیل هوشمند اخبار</title>
-    <!-- پالت رنگی انتخاب شده: رنگ‌های خنثی گرم و سبز آرامش‌بخش -->
-    <!-- طرح‌بندی ساختار برنامه: طرح‌بندی واکنش‌گرا دو ستونی. ستون سمت راست شامل فیلترهای ناوبری (دسته‌بندی‌ها و نوار جستجو) و یک نمودار دونات تعاملی برای نمای کلی بصری. ستون سمت چپ ناحیه محتوای اصلی است که یا یک گرید از مقالات خبری یا جزئیات کامل مقاله انتخاب شده را نمایش می‌دهد. این ساختار اصلی-جزئی کاربرپسند است، ناوبری را از محتوا جدا می‌کند، و امکان فیلتر سریع و کاوش را در یک صفحه واحد فراهم می‌کند، که باعث بهبود قابلیت استفاده می‌شود. -->
-    <!-- انتخاب بصری‌سازی و محتوا:
-        - اطلاعات گزارش: مقالات خبری با دسته‌بندی‌ها. هدف: ارائه خلاصه‌ای سطح بالا از توزیع محتوا. بصری‌سازی/ارائه: نمودار دونات (Chart.js/Canvas) که تعداد مقالات را بر اساس دسته‌بندی نشان می‌دهد. تعامل: کلیک روی یک بخش از نمودار، لیست مقالات را در ستون سمت چپ فیلتر می‌کند. توجیه: راهی سریع، بصری و جذاب برای ناوبری و فیلتر کردن محتوا ارائه می‌دهد. کتابخانه: Chart.js.
-        - اطلاعات گزارش: لیست همه مقالات. هدف: امکان مرور و انتخاب اخبار برای کاربران. بصری‌سازی/ارائه: گرید واکنش‌گرا از کارت‌های مقاله (HTML/Tailwind). تعامل: کلیک روی یک کارت، جزئیات کامل مقاله را نمایش می‌دهد. توجیه: یک الگوی آشنا و موثر برای مرور محتوا. کتابخانه: جاوااسکریپت خالص (Vanilla JS).
-        - اطلاعات گزارش: محتوای کامل مقاله. هدف: امکان مطالعه عمیق. بصری‌سازی/ارائه: نمای تمیز و خوانا و تک ستونی برای متن و تصویر مقاله. تعامل: یک دکمه 'بازگشت' برای بازگشت به لیست. توجیه: توجه کاربر را بدون حواس‌پرتی روی محتوا متمرکز می‌کند. کتابخانه: جاوااسکریپت خالص (Vanilla JS).
-    -->
-    <!-- تأیید: هیچ گرافیک SVG استفاده نشده است. هیچ کتابخانه Mermaid JS استفاده نشده است. -->
+    <title>داشبورد ترندهای هوشمند</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Vazirmatn', sans-serif;
-            background-color: #F8F7F4; /* رنگ خنثی و گرم برای پس‌زمینه */
-        }
-        .chart-container {
-            position: relative;
-            width: 100%;
-            max-width: 400px;
-            margin-left: auto;
-            margin-right: auto;
-            height: 350px;
-            max-height: 40vh;
+            background-color: #F8F7F4;
         }
         .prose {
             line-height: 1.75;
@@ -44,446 +27,110 @@
         }
     </style>
     <!-- مسیر آیکون اصلی سایت (favicon) -->
-    <link rel="icon" href="/images/icons/my-app-icon.png" type="image/png"> 
+    <link rel="icon" href="/images/icons/my-app-icon.png" type="image/png">
     <!-- مسیر آیکون برای دستگاه‌های اپل (برای افزودن به صفحه اصلی) -->
     <link rel="apple-touch-icon" href="/images/icons/my-app-icon.png">
     <!-- لینک به فایل Manifest برای قابلیت PWA و نمایش آیکون روی صفحه اصلی گوشی -->
-    <link rel="manifest" href="/manifest.json"> 
-
+    <link rel="manifest" href="/manifest.json">
 </head>
 <body class="text-gray-800">
 
     <div class="container mx-auto p-4 md:p-8">
-        
         <header class="text-center mb-10">
-            <h1 class="text-4xl md:text-5xl font-bold text-green-800">داشبورد تحلیل هوشمند اخبار</h1>
-            <p class="text-lg text-gray-600 mt-2">کاوش تعاملی در آخرین رویدادها و دسته‌بندی‌ها</p>
+            <h1 class="text-4xl md:text-5xl font-bold text-blue-800">داشبورد ترندهای هوشمند</h1>
+            <p class="text-lg text-gray-600 mt-2">کاوش در موضوعات پرطرفدار و ترندها</p>
         </header>
 
         <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
-            <!-- ستون سمت راست (فیلترها و نمودار) -->
             <aside class="lg:col-span-1 bg-white p-6 rounded-2xl shadow-lg h-fit lg:sticky top-8">
-                <h2 class="text-2xl font-bold mb-6 border-b-2 border-green-200 pb-3">ابزارهای کاوش</h2>
-                
-                <!-- بخش جستجو -->
-                <div class="mb-6">
-                    <label for="search-input" class="font-bold text-gray-700 block mb-2">جستجو در عناوین</label>
-                    <input type="text" id="search-input" placeholder="مثال: هوش مصنوعی" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition">
-                </div>
-
-                <!-- بخش دسته‌بندی‌ها -->
-                <div class="mb-8">
-                    <h3 class="font-bold text-gray-700 block mb-3">فیلتر بر اساس دسته‌بندی</h3>
-                    <div id="category-filters" class="space-y-2">
-                        <!-- دکمه‌های فیلتر به صورت پویا اینجا اضافه می‌شوند -->
-                    </div>
-                </div>
-
-                <!-- نمودار توزیع اخبار -->
-                <div>
-                    <h3 class="font-bold text-gray-700 block mb-4 text-center">توزیع اخبار بر اساس موضوع</h3>
-                    <div class="chart-container">
-                        <canvas id="category-chart"></canvas>
-                    </div>
-                </div>
+                <h2 class="text-2xl font-bold mb-6 border-b-2 border-blue-200 pb-3">درباره ترندها</h2>
+                <p class="text-gray-700">این بخش به شما موضوعات پرطرفدار و ترندهای روز را نمایش می‌دهد. این داده‌ها به صورت شبیه‌سازی شده از یک منبع فرضی دریافت می‌شوند.</p>
+                <button id="refresh-button" class="mt-6 bg-blue-600 text-white py-2 px-5 rounded-lg hover:bg-blue-700 transition-colors w-full">بارگذاری مجدد ترندها</button>
             </aside>
 
-            <!-- ستون سمت چپ (محتوای اصلی) -->
             <section id="content-area" class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-lg">
-                <!-- محتوای مقالات یا جزئیات مقاله اینجا نمایش داده می‌شود -->
-                <div id="news-loading-indicator" class="text-center text-green-700 text-lg font-semibold mt-8" style="display:none;">
-                    <svg class="animate-spin h-8 w-8 text-green-600 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <h2 class="text-3xl font-bold mb-6">موضوعات ترند</h2>
+                <div id="trends-loading-indicator" class="text-center text-blue-700 text-lg font-semibold mt-8">
+                    <svg class="animate-spin h-8 w-8 text-blue-600 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    در حال بارگذاری اخبار...
+                    در حال بارگذاری ترندها...
                 </div>
-                <div id="news-error-message" class="text-center text-red-600 text-lg font-semibold mt-8" style="display:none;">
-                    خطا در بارگذاری اخبار. لطفاً اتصال اینترنت خود را بررسی کنید.
+                <div id="trends-error-message" class="text-center text-red-600 text-lg font-semibold mt-8" style="display:none;">
+                    خطا در بارگذاری ترندها. لطفاً اتصال اینترنت خود را بررسی کنید.
                 </div>
-                <div id="article-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- مقالات اینجا نمایش داده می‌شوند -->
+                <div id="trends-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- ترندها اینجا نمایش داده می‌شوند -->
                 </div>
             </section>
-
         </main>
     </div>
 
-    <script type="module">
-        // Firebase Imports
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
-        import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
-        import { getFirestore, collection, query, orderBy, onSnapshot, doc, getDoc, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+    <script>
+        // ثبت Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    })
+                    .catch(err => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
 
-        // Global Firebase Variables (will be defined by Canvas environment)
-        // این خط با ID واقعی اپلیکیشن شما جایگزین شده است.
-        const appId = '9ac48b56-c1f5-44d1-911c-2ea4e43402fc'; 
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        const trendsGrid = document.getElementById('trends-grid');
+        const trendsLoadingIndicator = document.getElementById('trends-loading-indicator');
+        const trendsErrorMessage = document.getElementById('trends-error-message');
+        const refreshButton = document.getElementById('refresh-button');
 
-        let app;
-        let db;
-        let auth;
-        let userId = 'anonymous'; // Default to anonymous
+        async function fetchAndDisplayTrends() {
+            trendsLoadingIndicator.style.display = 'block';
+            trendsErrorMessage.style.display = 'none';
+            trendsGrid.innerHTML = ''; // Clear previous content
 
-        // Initialize Firebase and Authenticate
-        async function initializeFirebase() {
             try {
-                if (firebaseConfig) {
-                    app = initializeApp(firebaseConfig);
-                    db = getFirestore(app);
-                    auth = getAuth(app);
+                // آدرس Netlify Function جدید
+                const functionUrl = '/.netlify/functions/get-trending-topics';
 
-                    if (initialAuthToken) {
-                        await signInWithCustomToken(auth, initialAuthToken);
-                        console.log("DEV_LOG: Signed in with custom token.");
-                    } else {
-                        await signInAnonymously(auth);
-                        console.log("DEV_LOG: Signed in anonymously.");
-                    }
-                    userId = auth.currentUser?.uid || crypto.randomUUID(); // Get actual UID or generate if anonymous
-                    console.log("DEV_LOG: Firebase initialized. User ID:", userId);
-                    return true;
-                } else {
-                    console.error("DEV_LOG: Firebase config is not defined.");
-                    showMessageBox("خطا: تنظیمات Firebase در دسترس نیست. برنامه به درستی کار نمی‌کند.", 'error');
-                    return false;
+                const response = await fetch(functionUrl);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
+                const data = await response.json();
+
+                trendsLoadingIndicator.style.display = 'none';
+
+                if (data.trends && data.trends.length > 0) {
+                    data.trends.forEach(trend => {
+                        const trendCard = document.createElement('div');
+                        trendCard.className = 'bg-gray-50 rounded-xl shadow-md p-5 transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1';
+                        trendCard.innerHTML = `
+                            <h3 class="text-xl font-bold text-blue-800">${trend.topic}</h3>
+                            <p class="mt-2 text-gray-600">${trend.description}</p>
+                            <p class="mt-3 text-sm text-gray-500">تاریخ: ${new Date(trend.date).toLocaleDateString('fa-IR')}</p>
+                        `;
+                        trendsGrid.appendChild(trendCard);
+                    });
+                } else {
+                    trendsErrorMessage.textContent = 'هنوز ترندی برای نمایش وجود ندارد.';
+                    trendsErrorMessage.style.display = 'block';
+                }
+
             } catch (error) {
-                console.error("DEV_LOG: Firebase initialization or authentication failed:", error);
-                showMessageBox("خطا در اتصال به Firebase. برخی قابلیت‌ها ممکن است کار نکنند.", 'error');
-                return false;
+                console.error("Error fetching trends:", error);
+                trendsLoadingIndicator.style.display = 'none';
+                trendsErrorMessage.textContent = `خطا در بارگذاری ترندها: ${error.message}`;
+                trendsErrorMessage.style.display = 'block';
             }
         }
 
-        (async function() { // Self-executing async function for initial setup
-            const firebaseReady = await initializeFirebase();
-            if (!firebaseReady) return; // Stop if Firebase not ready
+        // Initial fetch when the page loads
+        document.addEventListener('DOMContentLoaded', fetchAndDisplayTrends);
+        refreshButton.addEventListener('click', fetchAndDisplayTrends);
 
-            // Other global variables and DOM elements
-            const contentArea = document.getElementById('content-area');
-            const categoryFiltersContainer = document.getElementById('category-filters');
-            const searchInput = document.getElementById('search-input');
-            const newsLoadingIndicator = document.getElementById('news-loading-indicator');
-            const newsErrorMessage = document.getElementById('news-error-message');
-            const articleGrid = document.getElementById('article-grid');
-            let categoryChart;
-            let allNewsArticles = []; // Store all fetched news articles for filtering
-            let currentNewsSnapshotUnsubscribe = null; // To unsubscribe from previous snapshot listeners
-
-            // Firebase Collections
-            const NEWS_COLLECTION_PATH = `artifacts/${appId}/public/data/news-articles`;
-            const HISTORY_COLLECTION_PATH = `artifacts/${appId}/users/${userId}/news-history`;
-
-            // Helper for Markdown rendering
-            const marked = window.marked; // Access marked.js from global scope
-
-            /* تابع برای فرمت کردن تاریخ */
-            const formatTimestamp = (timestamp) => {
-                if (timestamp && timestamp.toDate) { // Check if it's a Firestore Timestamp object
-                    return timestamp.toDate().toLocaleString('fa-IR', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-                } else if (typeof timestamp === 'number') { // If it's a regular JS timestamp number
-                    return new Date(timestamp).toLocaleString('fa-IR', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-                }
-                return 'تاریخ نامشخص';
-            };
-            
-            /* تابع برای نمایش لیست مقالات */
-            function displayArticles(articles) {
-                articleGrid.innerHTML = ''; // Clear existing content
-                if (articles.length === 0) {
-                    articleGrid.innerHTML = '<p class="col-span-full text-center text-gray-500">مقاله‌ای با این مشخصات یافت نشد.</p>';
-                    return;
-                }
-                articles.forEach(article => {
-                    const articleCard = document.createElement('div');
-                    articleCard.className = 'bg-gray-50 rounded-xl shadow-md overflow-hidden transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer';
-                    articleCard.innerHTML = `
-                        <img class="h-48 w-full object-cover" src="${article.imageUrl || 'https://placehold.co/800x400/D6E0C7/234723?text=No+Image'}" alt="${article.title}">
-                        <div class="p-5">
-                            <div class="uppercase tracking-wide text-sm text-green-600 font-semibold">${article.category || 'متفرقه'}</div>
-                            <h3 class="block mt-1 text-lg leading-tight font-bold text-black hover:underline">${article.title}</h3>
-                            <p class="mt-2 text-gray-500 text-sm">${article.summary || 'خلاصه‌ای موجود نیست.'}</p>
-                            <p class="mt-3 text-xs text-gray-400">${formatTimestamp(article.timestamp)}</p>
-                        </div>
-                    `;
-                    articleCard.addEventListener('click', () => displayArticleDetail(article.id));
-                    articleGrid.appendChild(articleCard);
-                });
-            }
-
-            /* تابع برای نمایش جزئیات یک مقاله */
-            async function displayArticleDetail(articleId) {
-                const article = allNewsArticles.find(a => a.id === articleId);
-                if (!article) {
-                    showMessageBox('مقاله یافت نشد.', 'error');
-                    return;
-                }
-
-                contentArea.innerHTML = `
-                    <button id="back-button" class="mb-6 bg-green-600 text-white py-2 px-5 rounded-lg hover:bg-green-700 transition-colors">بازگشت به لیست اخبار</button>
-                    <article>
-                        <h1 class="text-4xl font-extrabold text-gray-900 mb-4">${article.title}</h1>
-                        <div class="flex items-center text-sm text-gray-500 mb-6">
-                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full">${article.category || 'متفرقه'}</span>
-                            <span class="mx-3">|</span>
-                            <span>${formatTimestamp(article.timestamp)}</span>
-                        </div>
-                        <img class="rounded-xl w-full h-80 object-cover mb-8 shadow-lg" src="${article.imageUrl || 'https://placehold.co/800x400/D6E0C7/234723?text=No+Image'}" alt="${article.title}">
-                        <div class="prose max-w-none">
-                            ${marked.parse(article.content || 'محتوایی موجود نیست.')}
-                        </div>
-                         <button id="summarize-button" class="mt-6 bg-blue-600 text-white py-2 px-5 rounded-lg hover:bg-blue-700 transition-colors">خلاصه‌سازی با هوش مصنوعی</button>
-                        <div id="summary-output" class="mt-4 text-gray-700"></div>
-                         <div id="summary-error" class="text-red-500 text-sm mt-2"></div>
-                    </article>
-                `;
-                document.getElementById('back-button').addEventListener('click', () => {
-                    displayArticles(allNewsArticles); // Show all articles or last filtered ones
-                    updateActiveFilter('all'); // Reset filter highlight
-                });
-
-                document.getElementById('summarize-button').addEventListener('click', async () => {
-                     const summarizeBtn = document.getElementById('summarize-button');
-                     const summaryOutput = document.getElementById('summary-output');
-                     const summaryErrorDiv = document.getElementById('summary-error');
-
-                     summaryOutput.innerHTML = '';
-                     summaryErrorDiv.innerHTML = '';
-                     summarizeBtn.disabled = true;
-                     summarizeBtn.textContent = 'در حال خلاصه‌سازی...';
-                     summarizeBtn.classList.add('bg-gray-400');
-                     summarizeBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-
-                     try {
-                         const articleContent = article.content; // محتوای مقاله را برای خلاصه‌سازی ارسال می‌کنیم.
-                         const functionUrl = '/.netlify/functions/gemini-proxy'; // تغییر به gemini-proxy
-
-                         const payload = { prompt: `متن زیر را به فارسی و به صورت خلاصه (حداکثر 5 خط) برای یک خبرنامه مختصر و مفید بازنویسی کن. فقط متن خلاصه را ارائه بده و از هیچ مقدمه یا موخره ای استفاده نکن:\n\n${articleContent}` };
-                         
-                         const response = await fetch(functionUrl, {
-                             method: 'POST',
-                             headers: { 'Content-Type': 'application/json' },
-                             body: JSON.stringify(payload),
-                         });
-
-                         if (!response.ok) {
-                             const errorData = await response.json();
-                             throw new Error(errorData.error.details || errorData.error.message || 'دریافت خلاصه از API با خطا مواجه شد');
-                         }
-
-                         const result = await response.json();
-                         if (result.response) { // تغییر از result.summary به result.response
-                             summaryOutput.innerHTML = `<div class="bg-blue-50 p-4 rounded-lg border border-blue-200 mt-4"><p class="font-bold">خلاصه هوش مصنوعی:</p><p>${result.response}</p></div>`;
-                             // Add to Firestore history (optional, if you want summarization history)
-                             await addDoc(collection(db, HISTORY_COLLECTION_PATH), {
-                                 articleId: article.id,
-                                 articleTitle: article.title,
-                                 summarizedContent: result.response,
-                                 timestamp: serverTimestamp(),
-                                 type: 'summarization'
-                             });
-                         } else {
-                             throw new Error('خلاصه‌ای از API دریافت نشد.');
-                         }
-                     } catch (error) {
-                         summaryErrorDiv.innerHTML = `<div class="bg-red-50 p-4 rounded-lg border border-red-200 mt-4">خطا در خلاصه‌سازی: ${error.message}. لطفاً از تنظیم بودن Netlify Function و API Key اطمینان حاصل کنید.</div>`;
-                     } finally {
-                         summarizeBtn.disabled = false;
-                         summarizeBtn.textContent = 'خلاصه‌سازی با هوش مصنوعی';
-                         summarizeBtn.classList.remove('bg-gray-400');
-                         summarizeBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
-                     }
-                 });
-            }
-
-            /* تابع برای ساخت دکمه‌های فیلتر */
-            function createCategoryFilters() {
-                // Categories will be dynamic based on fetched news
-                const categories = ['all', ...new Set(allNewsArticles.map(a => a.category))];
-                categoryFiltersContainer.innerHTML = ''; // Clear previous buttons
-                categories.forEach(category => {
-                    const button = document.createElement('button');
-                    button.textContent = category === 'all' ? 'همه دسته‌بندی‌ها' : category;
-                    button.dataset.category = category;
-                    button.className = `w-full text-right p-3 rounded-lg transition-colors duration-200 filter-btn`;
-                    button.classList.add(category === 'all' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-800 hover:bg-green-200');
-                    button.addEventListener('click', () => filterByCategory(category));
-                    categoryFiltersContainer.appendChild(button);
-                });
-            }
-            
-            /* تابع برای به‌روزرسانی ظاهر دکمه فیلتر فعال */
-            function updateActiveFilter(activeCategory) {
-                document.querySelectorAll('.filter-btn').forEach(btn => {
-                    if (btn.dataset.category === activeCategory) {
-                        btn.classList.remove('bg-gray-200', 'text-gray-800', 'hover:bg-green-200');
-                        btn.classList.add('bg-green-600', 'text-white');
-                    } else {
-                        btn.classList.remove('bg-green-600', 'text-white');
-                        btn.classList.add('bg-gray-200', 'text-gray-800', 'hover:bg-green-200');
-                    }
-                });
-            }
-
-            /* تابع برای فیلتر کردن بر اساس دسته‌بندی */
-            function filterByCategory(category) {
-                searchInput.value = '';
-                const filteredArticles = category === 'all' 
-                    ? allNewsArticles
-                    : allNewsArticles.filter(a => a.category === category);
-                displayArticles(filteredArticles);
-                updateActiveFilter(category);
-            }
-
-            /* تابع برای فیلتر کردن بر اساس جستجو */
-            function filterBySearch(searchTerm) {
-                const term = searchTerm.toLowerCase();
-                const filteredArticles = allNewsArticles.filter(a => 
-                    a.title.toLowerCase().includes(term) ||
-                    (a.summary && a.summary.toLowerCase().includes(term)) ||
-                    (a.content && a.content.toLowerCase().includes(term))
-                );
-                displayArticles(filteredArticles);
-                updateActiveFilter(null); // Clear category filter highlight
-            }
-
-            /* تابع برای ساخت نمودار */
-            function createChart() {
-                if (categoryChart) {
-                    categoryChart.destroy(); // Destroy existing chart if it exists
-                }
-                const ctx = document.getElementById('category-chart').getContext('2d');
-                const categories = [...new Set(allNewsArticles.map(a => a.category || 'متفرقه'))]; // Use 'متفرقه' for articles without category
-                const data = categories.map(cat => allNewsArticles.filter(a => (a.category || 'متفرقه') === cat).length);
-                
-                const backgroundColors = [
-                    '#4CAF50', '#8BC34A', '#CDDC39', '#FFC107', '#FF9800', '#00BCD4', '#2196F3', '#3F51B5', '#673AB7', '#9C27B0'
-                ]; // More colors
-
-                categoryChart = new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: categories,
-                        datasets: [{
-                            label: 'تعداد اخبار',
-                            data: data,
-                            backgroundColor: backgroundColors.slice(0, categories.length),
-                            borderColor: '#F8F7F4',
-                            borderWidth: 4,
-                            hoverOffset: 10
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'bottom',
-                                labels: {
-                                    font: {
-                                        family: 'Vazirmatn'
-                                    },
-                                    padding: 20
-                                }
-                            },
-                            tooltip: {
-                                bodyFont: {
-                                    family: 'Vazirmatn'
-                                },
-                                titleFont: {
-                                    family: 'Vazirmatn'
-                                }
-                            }
-                        },
-                        onClick: (event, elements) => {
-                            if (elements.length > 0) {
-                                const chartElement = elements[0];
-                                const category = categoryChart.data.labels[chartElement.index];
-                                filterByCategory(category);
-                            }
-                        }
-                    }
-                });
-            }
-
-            // Message Box Helper
-            function showMessageBox(message, type = 'info') {
-                clearTimeout(this.messageBoxTimeout); // Use 'this' if messageBoxTimeout is on an object, otherwise use global
-                messageBoxText.textContent = message;
-                messageBox.classList.remove('bg-red-600', 'bg-yellow-600', 'bg-blue-600');
-                
-                if (type === 'error') messageBox.classList.add('bg-red-600');
-                else if (type === 'warning') messageBox.classList.add('bg-yellow-600');
-                else messageBox.classList.add('bg-blue-600');
-                
-                messageBox.style.display = 'block';
-                // Force reflow to restart animation
-                void messageBox.offsetWidth; 
-                messageBox.classList.add('animate-fade-in-down'); // Assuming you have this animation in CSS
-
-                if (type !== 'error') {
-                   this.messageBoxTimeout = setTimeout(() => { // Using 'this' for timeout
-                       messageBox.style.display = 'none';
-                       messageBox.classList.remove('animate-fade-in-down');
-                   }, 5000);
-                }
-            }
-
-
-            // --- Firestore Data Fetching ---
-            function listenForNewsArticles() {
-                if (currentNewsSnapshotUnsubscribe) {
-                    currentNewsSnapshotUnsubscribe(); // Unsubscribe from previous listener
-                }
-
-                newsLoadingIndicator.style.display = 'block';
-                newsErrorMessage.style.display = 'none';
-                articleGrid.innerHTML = '';
-
-                // Query for news articles (ordered by timestamp)
-                const q = query(collection(db, NEWS_COLLECTION_PATH), orderBy('timestamp', 'desc'));
-
-                currentNewsSnapshotUnsubscribe = onSnapshot(q, (snapshot) => {
-                    newsLoadingIndicator.style.display = 'none';
-                    if (snapshot.empty) {
-                        newsErrorMessage.textContent = 'هنوز خبری برای نمایش وجود ندارد.';
-                        newsErrorMessage.style.display = 'block';
-                        allNewsArticles = [];
-                    } else {
-                        newsErrorMessage.style.display = 'none';
-                        allNewsArticles = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                        displayArticles(allNewsArticles);
-                        createCategoryFilters(); // Re-create filters based on new data
-                        createChart(); // Re-create chart based on new data
-                    }
-                }, (error) => {
-                    console.error("DEV_LOG: Error fetching news articles:", error);
-                    newsLoadingIndicator.style.display = 'none';
-                    newsErrorMessage.textContent = `خطا در دریافت اخبار: ${error.message}.`;
-                    newsErrorMessage.style.display = 'block';
-                    showMessageBox('خطا در بارگذاری اخبار از پایگاه داده.', 'error');
-                });
-            }
-
-            // Initial calls after Firebase is ready
-            listenForNewsArticles();
-            searchInput.addEventListener('input', (e) => filterBySearch(e.target.value));
-
-            // PWA Service Worker Registration
-            if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('/service-worker.js')
-                        .then(registration => {
-                            console.log('SW registered: ', registration);
-                        })
-                        .catch(registrationError => {
-                            console.log('SW registration failed: ', registrationError);
-                        });
-                });
-            }
-        })();
     </script>
 </body>
 </html>
