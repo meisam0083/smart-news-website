@@ -1,6 +1,6 @@
 {
-  "name": "اخبار هوشمند V3",
-  "short_name": "اخبار V3",
+  "name": "اخبار هوشمند",
+  "short_name": "اخبار",
   "description": "داشبورد تحلیل هوشمند اخبار و خلاصه‌سازی با هوش مصنوعی",
   "start_url": "/",
   "display": "standalone",
