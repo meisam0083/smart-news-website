@@ -1,18 +1,22 @@
-// نام کش فعلی. هر زمان که فایل‌های ثابت (مانند index.html, manifest.json, icons) تغییر کردند، این نام را به 'smart-news-cache-v2', 'smart-news-cache-v3' و ... تغییر دهید تا کش‌های قدیمی پاک شوند.
-const CACHE_NAME = 'smart-news-cache-v1'; 
+// service-worker.js
+// این فایل مسئول کش کردن منابع برنامه برای کار آفلاین و بهبود عملکرد است.
+
+// نام کش فعلی. هر زمان که فایل‌های ثابت (مانند index.html, manifest.json, icons) تغییر کردند، این نام را به 'smart-news-cache-v3', 'smart-news-cache-v4' و ... تغییر دهید تا کش‌های قدیمی پاک شوند.
+const CACHE_NAME = 'smart-news-cache-v2'; 
 
 // لیستی از URL هایی که می‌خواهیم کش شوند.
 const urlsToCache = [
   '/', // روت سایت که index.html را بارگذاری می‌کند
   '/index.html',
   '/manifest.json',
-  '/images/icons/my-app-icon.png', // مطمئن شوید مسیر آیکون درست است
-  // فایل service-worker.js به صورت خودکار توسط مرورگر کش و مدیریت می‌شود
+  '/images/icons/my-app-icon.png', // مسیر آیکون سایت خبری
+  // سایر دارایی‌ها اگر وجود دارند
+  'https://cdn.tailwindcss.com', 
+  'https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap' // فونت Vazirtmatn
 ];
 
 // هنگام نصب سرویس ورکر
 self.addEventListener('install', (event) => {
-  // منتظر می‌ماند تا کش باز شود و همه فایل‌های لازم کش شوند
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
@@ -22,23 +26,7 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// هنگام درخواست‌های شبکه
-self.addEventListener('fetch', (event) => {
-  // تلاش می‌کند پاسخ را از کش پیدا کند، اگر پیدا نکرد از شبکه می‌گیرد
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // اگر پاسخ در کش بود، آن را برمی‌گرداند
-        if (response) {
-          return response;
-        }
-        // اگر در کش نبود، از شبکه می‌گیرد
-        return fetch(event.request);
-      })
-  );
-});
-
-// هنگام فعال شدن سرویس ورکر جدید (مثلاً بعد از آپدیت)
+// هنگام فعال‌سازی سرویس‌ورکر، کش‌های قدیمی را پاک می‌کند.
 self.addEventListener('activate', (event) => {
   const cacheWhitelist = [CACHE_NAME]; // فقط کش فعلی را در لیست سفید نگه می‌دارد
   event.waitUntil(
@@ -47,16 +35,42 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheWhitelist.indexOf(cacheName) === -1) {
+            console.log('Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
+          return null;
         })
       );
     })
   );
 });
 
-// نکته: برای اینکه تغییرات آیکون اعمال شود، باید:
-// 1. فایل service-worker.js را به روز کنید (نام CACHE_NAME را تغییر دهید)
-// 2. فایل manifest.json را به روز کنید (نام یا short_name را تغییر دهید)
-// 3. فایل index.html را به روز کنید (لینک manifest نیازی به ?v= ندارد، اما برای اطمینان می‌توانید آن را نگه دارید یا یک timestamp جدید به index.html اضافه کنید تا مطمئن شوید مرورگر index.html جدید را می‌گیرد).
-// 4. کاربر باید یک بار برنامه را از صفحه اصلی حذف و کش مرورگر را پاک کند و دوباره اضافه کند (فقط برای اولین بار بعد از اعمال Service Worker).
+// درخواست‌های شبکه راIntercept می‌کند و محتوا را از کش یا شبکه باز می‌گرداند.
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    caches.match(event.request)
+      .then((response) => {
+        // اگر پاسخی در کش پیدا شد، آن را برمی‌گرداند.
+        if (response) {
+          return response;
+        }
+        // در غیر این صورت، درخواست را به شبکه می‌فرستد.
+        return fetch(event.request)
+          .then((networkResponse) => {
+            // پاسخ شبکه را کش می‌کند تا برای درخواست‌های بعدی در دسترس باشد.
+            return caches.open(CACHE_NAME).then((cache) => {
+              // فقط درخواست‌های GET و پاسخ‌های موفق (status 200) را کش کنید
+              if (networkResponse.ok && event.request.method === 'GET') {
+                  cache.put(event.request, networkResponse.clone());
+              }
+              return networkResponse;
+            });
+          });
+      })
+      .catch(() => {
+        // اگر هیچ پاسخی در کش و شبکه پیدا نشد (مثلاً آفلاین هستید)، می‌توانید یک صفحه آفلاین پیش‌فرض را برگردانید.
+        console.log('Fetch failed, request not in cache:', event.request.url);
+        return new Response('<h1>شما آفلاین هستید و این صفحه در کش نیست!</h1>', { headers: { 'Content-Type': 'text/html' }});
+      })
+  );
+});
