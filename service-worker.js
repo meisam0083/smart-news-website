@@ -1,15 +1,15 @@
 // service-worker.js
 // این فایل مسئول کش کردن منابع برنامه برای کار آفلاین و بهبود عملکرد است.
 
-// نام کش فعلی. هر زمان که فایل‌های ثابت (مانند index.html, manifest.json, icons) تغییر کردند، این نام را به 'smart-news-cache-v5', 'smart-news-cache-v6' و ... تغییر دهید تا کش‌های قدیمی پاک شوند.
-const CACHE_NAME = 'smart-news-cache-v4'; 
+// نام کش فعلی. هر زمان که فایل‌های ثابت (مانند index.html, manifest.json, icons) تغییر کردند، این نام را به 'smart-trends-cache-v6', 'smart-trends-cache-v7' و ... تغییر دهید تا کش‌های قدیمی پاک شوند.
+const CACHE_NAME = 'smart-trends-cache-v5'; 
 
 // لیستی از URL هایی که می‌خواهیم کش شوند.
 const urlsToCache = [
   '/', // روت سایت که index.html را بارگذاری می‌کند
   '/index.html',
   '/manifest.json',
-  '/images/icons/my-app-icon.png', // مسیر آیکون سایت خبری
+  '/images/icons/my-app-icon.png', // مسیر آیکون سایت
   // سایر دارایی‌ها اگر وجود دارند
   'https://cdn.tailwindcss.com', 
   'https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700&display=swap' // فونت Vazirtmatn
