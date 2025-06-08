@@ -92,277 +92,397 @@
             <!-- ستون سمت چپ (محتوای اصلی) -->
             <section id="content-area" class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-lg">
                 <!-- محتوای مقالات یا جزئیات مقاله اینجا نمایش داده می‌شود -->
+                <div id="news-loading-indicator" class="text-center text-green-700 text-lg font-semibold mt-8" style="display:none;">
+                    <svg class="animate-spin h-8 w-8 text-green-600 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    در حال بارگذاری اخبار...
+                </div>
+                <div id="news-error-message" class="text-center text-red-600 text-lg font-semibold mt-8" style="display:none;">
+                    خطا در بارگذاری اخبار. لطفاً اتصال اینترنت خود را بررسی کنید.
+                </div>
+                <div id="article-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- مقالات اینجا نمایش داده می‌شوند -->
+                </div>
             </section>
 
         </main>
     </div>
 
-    <script>
-        // ثبت Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/service-worker.js')
-                    .then(registration => {
-                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                    })
-                    .catch(err => {
-                        console.log('ServiceWorker registration failed: ', err);
-                    });
-            });
-        }
+    <script type="module">
+        // Firebase Imports
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+        import { getAuth, signInAnonymously } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+        import { getFirestore, collection, query, orderBy, onSnapshot, doc, getDoc, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
-        const newsData = [
-          {
-            id: '1',
-            title: 'تغییرات اقلیمی و آینده سیاره زمین',
-            imageUrl: 'https://placehold.co/800x400/A3BEAD/364E3A?text=Climate', /* تصویر placeholder */
-            summary: 'مقاله ای جامع در مورد آخرین تحولات تغییرات اقلیمی، اثرات آن بر محیط زیست و راهکارهای جهانی برای مقابله با آن.',
-            content: `<h1>بحران جهانی تغییرات اقلیمی</h1><p>تغییرات اقلیمی یکی از بزرگترین چالش‌های پیش روی بشریت در قرن 21 است. افزایش دمای جهانی، ذوب شدن یخچال‌های طبیعی، بالا آمدن سطح دریاها، و پدیده‌های آب و هوایی شدیدتر از جمله پیامدهای این پدیده هستند.</p><h2>تاثیرات بر محیط زیست و جوامع</h2><p>اثرات تغییرات اقلیمی بر محیط زیست گسترده و عمیق است. اکوسیستم‌ها در حال دگرگونی هستند، گونه‌های جانوری و گیاهی با خطر انقراض مواجه‌اند، و امنیت غذایی و آبی در بسیاری از مناطق جهان به خطر افتاده است. جوامع انسانی نیز از این تاثیرات در امان نیستند.</p><h3>راهکارهای مقابله و آینده</h3><p>مقابله با تغییرات اقلیمی نیازمند یک رویکرد جامع و هماهنگ جهانی است. کاهش انتشار گازهای گلخانه‌ای از طریق گذار به انرژی‌های تجدیدپذیر، افزایش بهره‌وری انرژی، و توسعه فناوری‌های سبز از جمله اقدامات کلیدی هستند.</p>`,
-            timestamp: new Date().setHours(10, 30, 0, 0),
-            category: 'محیط زیست'
-          },
-          {
-            id: '2',
-            title: 'پیشرفت‌های اخیر در هوش مصنوعی',
-            imageUrl: 'https://placehold.co/800x400/C6D4B9/4F5B47?text=AI', /* تصویر placeholder */
-            summary: 'مروری بر تازه‌ترین دستاوردهای هوش مصنوعی در زمینه‌های مختلف از جمله پردازش زبان طبیعی و بینایی کامپیوتر.',
-            content: `<h1>انقلاب هوش مصنوعی در راه است</h1><p>هوش مصنوعی (AI) به سرعت در حال پیشرفت است و مرزهای آنچه را که ماشین‌ها می‌توانند انجام دهند، جابجا می‌کند. از پردازش زبان طبیعی (NLP) و تشخیص تصویر گرفته تا رباتیک پیشرفته، کاربردهای AI در حال تغییر زندگی روزمره و صنایع مختلف هستند.</p><h2>کاربردهای نوین</h2><p>در حوزه پزشکی، AI به تشخیص زودهنگام بیماری‌ها و کشف داروهای جدید کمک می‌کند. در بخش حمل‌ونقل، وسایل نقلیه خودران در حال توسعه هستند. در امور مالی، AI برای تحلیل بازار و شناسایی تقلب به کار می‌رود.</p>`,
-            timestamp: new Date().setHours(11, 0, 0, 0),
-            category: 'فناوری'
-          },
-          {
-            id: '3',
-            title: 'اقتصاد جهانی در سال ۲۰۲۵',
-            imageUrl: 'https://placehold.co/800x400/D6E0C7/234723?text=Economy', /* تصویر placeholder */
-            summary: 'تحلیلی از وضعیت فعلی اقتصاد جهانی و پیش‌بینی‌های کارشناسان برای سال آینده با تمرکز بر تورم و رشد اقتصادی.',
-            content: `<h1>چشم‌انداز اقتصادی جهان</h1><p>اقتصاد جهانی در سال 2025 با مجموعه‌ای از فرصت‌ها و چالش‌ها مواجه است. پس از دوران پرنوسان اخیر، پیش‌بینی‌ها نشان‌دهنده یک رشد متعادل‌تر هستند، اما عوامل متعددی می‌توانند بر این مسیر تأثیر بگذارند.</p><h2>تورم و سیاست‌های پولی</h2><p>یکی از نگرانی‌های اصلی، ادامه تورم در برخی مناطق است. بانک‌های مرکزی با چالش متعادل کردن کنترل تورم و حمایت از رشد اقتصادی روبرو هستند.</p>`,
-            timestamp: new Date().setHours(9, 45, 0, 0),
-            category: 'اقتصاد'
-          },
-          {
-            id: '4',
-            title: 'اهمیت تغذیه سالم در پیشگیری از بیماری‌ها',
-            imageUrl: 'https://placehold.co/800x400/C5EABF/57534E?text=Health', /* تصویر placeholder */
-            summary: 'بررسی نقش کلیدی رژیم غذایی سالم و متوازن در حفظ سلامتی و کاهش خطر ابتلا به بیماری‌های مزمن.',
-            content: `<h1>تغذیه سالم: پایه و اساس سلامتی</h1><p>تغذیه سالم و متوازن نه تنها برای حفظ انرژی و فعالیت روزمره ضروری است، بلکه نقش حیاتی در پیشگیری از بسیاری از بیماری‌های مزمن ایفا می‌کند. رژیم غذایی سرشار از میوه‌ها، سبزیجات، غلات کامل، پروتئین‌های بدون چربی و چربی‌های سالم، بدن را با مواد مغذی مورد نیاز تجهیز می‌کند.</p>`,
-            timestamp: new Date().setHours(14, 15, 0, 0),
-            category: 'سلامت'
-          },
-          {
-            id: '5',
-            title: 'فناوری‌های نوین در انرژی‌های تجدیدپذیر',
-            imageUrl: 'https://placehold.co/800x400/E8ECDE/234723?text=Energy', /* تصویر placeholder */
-            summary: 'نگاهی به آخرین نوآوری‌ها در زمینه انرژی خورشیدی، بادی، و سایر منابع تجدیدپذیر که آینده انرژی جهان را شکل می‌دهند.',
-            content: `<h1>آینده انرژی: تجدیدپذیر و پایدار</h1><p>انرژی‌های تجدیدپذیر به عنوان ستون فقرات آینده انرژی جهان شناخته می‌شوند. با توجه به نگرانی‌های فزاینده در مورد تغییرات اقلیمی و کاهش منابع فسیلی، نوآوری در این حوزه با سرعت چشمگیری در حال پیشرفت است.</p>`,
-            timestamp: new Date().setHours(16, 0, 0, 0),
-            category: 'فناوری'
-          }
-        ];
+        // Global Firebase Variables (will be defined by Canvas environment)
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-        const contentArea = document.getElementById('content-area');
-        const categoryFiltersContainer = document.getElementById('category-filters');
-        const searchInput = document.getElementById('search-input');
-        let categoryChart;
+        let app;
+        let db;
+        let auth;
+        let userId = 'anonymous'; // Default to anonymous
 
-        /* تابع برای فرمت کردن تاریخ */
-        const formatTimestamp = (timestamp) => new Date(timestamp).toLocaleString('fa-IR', { year: 'numeric', month: 'long', day: 'numeric' });
-        
-        /* تابع برای نمایش لیست مقالات */
-        function displayArticles(articles) {
-            contentArea.innerHTML = `<h2 class="text-3xl font-bold mb-6">آخرین اخبار</h2><div id="article-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>`;
-            const articleGrid = document.getElementById('article-grid');
-            if (articles.length === 0) {
-                articleGrid.innerHTML = '<p class="col-span-full text-center text-gray-500">مقاله‌ای با این مشخصات یافت نشد.</p>';
-                return;
-            }
-            articles.forEach(article => {
-                const articleCard = document.createElement('div');
-                articleCard.className = 'bg-gray-50 rounded-xl shadow-md overflow-hidden transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer';
-                articleCard.innerHTML = `
-                    <img class="h-48 w-full object-cover" src="${article.imageUrl}" alt="${article.title}">
-                    <div class="p-5">
-                        <div class="uppercase tracking-wide text-sm text-green-600 font-semibold">${article.category}</div>
-                        <h3 class="block mt-1 text-lg leading-tight font-bold text-black hover:underline">${article.title}</h3>
-                        <p class="mt-2 text-gray-500 text-sm">${article.summary}</p>
-                        <p class="mt-3 text-xs text-gray-400">${formatTimestamp(article.timestamp)}</p>
-                    </div>
-                `;
-                articleCard.addEventListener('click', () => displayArticleDetail(article.id));
-                articleGrid.appendChild(articleCard);
-            });
-        }
+        // Initialize Firebase and Authenticate
+        async function initializeFirebase() {
+            try {
+                if (firebaseConfig) {
+                    app = initializeApp(firebaseConfig);
+                    db = getFirestore(app);
+                    auth = getAuth(app);
 
-        /* تابع برای نمایش جزئیات یک مقاله */
-        function displayArticleDetail(articleId) {
-            const article = newsData.find(a => a.id === articleId);
-            contentArea.innerHTML = `
-                <button id="back-button" class="mb-6 bg-green-600 text-white py-2 px-5 rounded-lg hover:bg-green-700 transition-colors">بازگشت به لیست اخبار</button>
-                <article>
-                    <h1 class="text-4xl font-extrabold text-gray-900 mb-4">${article.title}</h1>
-                    <div class="flex items-center text-sm text-gray-500 mb-6">
-                        <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full">${article.category}</span>
-                        <span class="mx-3">|</span>
-                        <span>${formatTimestamp(article.timestamp)}</span>
-                    </div>
-                    <img class="rounded-xl w-full h-80 object-cover mb-8 shadow-lg" src="${article.imageUrl}" alt="${article.title}">
-                    <div class="prose max-w-none">
-                        ${marked.parse(article.content)}
-                    </div>
-                     <button id="summarize-button" class="mt-6 bg-blue-600 text-white py-2 px-5 rounded-lg hover:bg-blue-700 transition-colors">خلاصه‌سازی با هوش مصنوعی</button>
-                    <div id="summary-output" class="mt-4 text-gray-700"></div>
-                     <div id="summary-error" class="text-red-500 text-sm mt-2"></div>
-                </article>
-            `;
-            document.getElementById('back-button').addEventListener('click', () => {
-                displayArticles(newsData);
-                updateActiveFilter('all');
-            });
-
-            document.getElementById('summarize-button').addEventListener('click', async () => {
-                 const summarizeBtn = document.getElementById('summarize-button');
-                 const summaryOutput = document.getElementById('summary-output');
-                 const summaryErrorDiv = document.getElementById('summary-error');
-
-                 summaryOutput.innerHTML = '';
-                 summaryErrorDiv.innerHTML = '';
-                 summarizeBtn.disabled = true;
-                 summarizeBtn.textContent = 'در حال خلاصه‌سازی...';
-                 summarizeBtn.classList.add('bg-gray-400');
-                 summarizeBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-
-                 try {
-                     const articleContent = article.content; /* محتوای مقاله را برای خلاصه‌سازی ارسال می‌کنیم. */
-                     /* آدرس Netlify Function ما. این آدرس به صورت خودکار توسط Netlify ایجاد می‌شود. */
-                     const functionUrl = '/.netlify/functions/summarize-news'; 
-
-                     const response = await fetch(functionUrl, {
-                         method: 'POST',
-                         headers: { 'Content-Type': 'application/json' },
-                         body: JSON.stringify({ articleContent }), /* محتوای مقاله را در بدنه درخواست ارسال می‌کنیم. */
-                     });
-
-                     if (!response.ok) {
-                         const errorData = await response.json();
-                         throw new Error(errorData.error.message || 'دریافت خلاصه از Netlify Function با خطا مواجه شد');
-                     }
-
-                     const result = await response.json();
-                     if (result.summary) {
-                         summaryOutput.innerHTML = `<div class="bg-blue-50 p-4 rounded-lg border border-blue-200 mt-4"><p class="font-bold">خلاصه هوش مصنوعی:</p><p>${result.summary}</p></div>`;
-                     } else {
-                         throw new Error('خلاصه‌ای از Function دریافت نشد.');
-                     }
-                 } catch (error) {
-                     summaryErrorDiv.innerHTML = `<div class="bg-red-50 p-4 rounded-lg border border-red-200 mt-4">خطا در خلاصه‌سازی: ${error.message}. لطفاً از تنظیم بودن Netlify Function و API Key اطمینان حاصل کنید.</div>`;
-                 } finally {
-                     summarizeBtn.disabled = false;
-                     summarizeBtn.textContent = 'خلاصه‌سازی با هوش مصنوعی';
-                     summarizeBtn.classList.remove('bg-gray-400');
-                     summarizeBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
-                 }
-             });
-        }
-
-        /* تابع برای ساخت دکمه‌های فیلتر */
-        function createCategoryFilters() {
-            const categories = ['all', ...new Set(newsData.map(a => a.category))];
-            categories.forEach(category => {
-                const button = document.createElement('button');
-                button.textContent = category === 'all' ? 'همه دسته‌بندی‌ها' : category;
-                button.dataset.category = category;
-                button.className = `w-full text-right p-3 rounded-lg transition-colors duration-200 filter-btn`;
-                button.classList.add(category === 'all' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-800 hover:bg-green-200');
-                button.addEventListener('click', () => filterByCategory(category));
-                categoryFiltersContainer.appendChild(button);
-            });
-        }
-        
-        /* تابع برای به‌روزرسانی ظاهر دکمه فیلتر فعال */
-        function updateActiveFilter(activeCategory) {
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                if (btn.dataset.category === activeCategory) {
-                    btn.classList.remove('bg-gray-200', 'text-gray-800', 'hover:bg-green-200');
-                    btn.classList.add('bg-green-600', 'text-white');
+                    if (initialAuthToken) {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                        console.log("DEV_LOG: Signed in with custom token.");
+                    } else {
+                        await signInAnonymously(auth);
+                        console.log("DEV_LOG: Signed in anonymously.");
+                    }
+                    userId = auth.currentUser?.uid || crypto.randomUUID(); // Get actual UID or generate if anonymous
+                    console.log("DEV_LOG: Firebase initialized. User ID:", userId);
+                    return true;
                 } else {
-                    btn.classList.remove('bg-gray-200', 'text-gray-800', 'hover:bg-green-200');
-                    btn.classList.add('bg-gray-200', 'text-gray-800', 'hover:bg-green-200');
+                    console.error("DEV_LOG: Firebase config is not defined.");
+                    showMessageBox("خطا: تنظیمات Firebase در دسترس نیست. برنامه به درستی کار نمی‌کند.", 'error');
+                    return false;
                 }
-            });
+            } catch (error) {
+                console.error("DEV_LOG: Firebase initialization or authentication failed:", error);
+                showMessageBox("خطا در اتصال به Firebase. برخی قابلیت‌ها ممکن است کار نکنند.", 'error');
+                return false;
+            }
         }
 
-        /* تابع برای فیلتر کردن بر اساس دسته‌بندی */
-        function filterByCategory(category) {
-            searchInput.value = '';
-            const filteredArticles = category === 'all' 
-                ? newsData 
-                : newsData.filter(a => a.title.toLowerCase().includes(term));
-            displayArticles(filteredArticles);
-            updateActiveFilter(null); 
-        }
+        (async function() { // Self-executing async function for initial setup
+            const firebaseReady = await initializeFirebase();
+            if (!firebaseReady) return; // Stop if Firebase not ready
 
-        /* تابع برای ساخت نمودار */
-        function createChart() {
-            const ctx = document.getElementById('category-chart').getContext('2d');
-            const categories = [...new Set(newsData.map(a => a.category))];
-            const data = categories.map(cat => newsData.filter(a => a.category === cat).length);
+            // Other global variables and DOM elements
+            const contentArea = document.getElementById('content-area');
+            const categoryFiltersContainer = document.getElementById('category-filters');
+            const searchInput = document.getElementById('search-input');
+            const newsLoadingIndicator = document.getElementById('news-loading-indicator');
+            const newsErrorMessage = document.getElementById('news-error-message');
+            const articleGrid = document.getElementById('article-grid');
+            let categoryChart;
+            let allNewsArticles = []; // Store all fetched news articles for filtering
+            let currentNewsSnapshotUnsubscribe = null; // To unsubscribe from previous snapshot listeners
+
+            // Firebase Collections
+            const NEWS_COLLECTION_PATH = `artifacts/${appId}/public/data/news-articles`;
+            const HISTORY_COLLECTION_PATH = `artifacts/${appId}/users/${userId}/news-history`;
+
+            // Helper for Markdown rendering
+            const marked = window.marked; // Access marked.js from global scope
+
+            /* تابع برای فرمت کردن تاریخ */
+            const formatTimestamp = (timestamp) => {
+                if (timestamp && timestamp.toDate) { // Check if it's a Firestore Timestamp object
+                    return timestamp.toDate().toLocaleString('fa-IR', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                } else if (typeof timestamp === 'number') { // If it's a regular JS timestamp number
+                    return new Date(timestamp).toLocaleString('fa-IR', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                }
+                return 'تاریخ نامشخص';
+            };
             
-            const backgroundColors = [
-                '#4CAF50', '#8BC34A', '#CDDC39', '#FFC107', '#FF9800',
-            ];
+            /* تابع برای نمایش لیست مقالات */
+            function displayArticles(articles) {
+                articleGrid.innerHTML = ''; // Clear existing content
+                if (articles.length === 0) {
+                    articleGrid.innerHTML = '<p class="col-span-full text-center text-gray-500">مقاله‌ای با این مشخصات یافت نشد.</p>';
+                    return;
+                }
+                articles.forEach(article => {
+                    const articleCard = document.createElement('div');
+                    articleCard.className = 'bg-gray-50 rounded-xl shadow-md overflow-hidden transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer';
+                    articleCard.innerHTML = `
+                        <img class="h-48 w-full object-cover" src="${article.imageUrl || 'https://placehold.co/800x400/D6E0C7/234723?text=No+Image'}" alt="${article.title}">
+                        <div class="p-5">
+                            <div class="uppercase tracking-wide text-sm text-green-600 font-semibold">${article.category || 'متفرقه'}</div>
+                            <h3 class="block mt-1 text-lg leading-tight font-bold text-black hover:underline">${article.title}</h3>
+                            <p class="mt-2 text-gray-500 text-sm">${article.summary || 'خلاصه‌ای موجود نیست.'}</p>
+                            <p class="mt-3 text-xs text-gray-400">${formatTimestamp(article.timestamp)}</p>
+                        </div>
+                    `;
+                    articleCard.addEventListener('click', () => displayArticleDetail(article.id));
+                    articleGrid.appendChild(articleCard);
+                });
+            }
 
-            categoryChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: categories,
-                    datasets: [{
-                        label: 'تعداد اخبار',
-                        data: data,
-                        backgroundColor: backgroundColors.slice(0, categories.length),
-                        borderColor: '#F8F7F4',
-                        borderWidth: 4,
-                        hoverOffset: 10
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                font: {
+            /* تابع برای نمایش جزئیات یک مقاله */
+            async function displayArticleDetail(articleId) {
+                const article = allNewsArticles.find(a => a.id === articleId);
+                if (!article) {
+                    showMessageBox('مقاله یافت نشد.', 'error');
+                    return;
+                }
+
+                contentArea.innerHTML = `
+                    <button id="back-button" class="mb-6 bg-green-600 text-white py-2 px-5 rounded-lg hover:bg-green-700 transition-colors">بازگشت به لیست اخبار</button>
+                    <article>
+                        <h1 class="text-4xl font-extrabold text-gray-900 mb-4">${article.title}</h1>
+                        <div class="flex items-center text-sm text-gray-500 mb-6">
+                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full">${article.category || 'متفرقه'}</span>
+                            <span class="mx-3">|</span>
+                            <span>${formatTimestamp(article.timestamp)}</span>
+                        </div>
+                        <img class="rounded-xl w-full h-80 object-cover mb-8 shadow-lg" src="${article.imageUrl || 'https://placehold.co/800x400/D6E0C7/234723?text=No+Image'}" alt="${article.title}">
+                        <div class="prose max-w-none">
+                            ${marked.parse(article.content || 'محتوایی موجود نیست.')}
+                        </div>
+                         <button id="summarize-button" class="mt-6 bg-blue-600 text-white py-2 px-5 rounded-lg hover:bg-blue-700 transition-colors">خلاصه‌سازی با هوش مصنوعی</button>
+                        <div id="summary-output" class="mt-4 text-gray-700"></div>
+                         <div id="summary-error" class="text-red-500 text-sm mt-2"></div>
+                    </article>
+                `;
+                document.getElementById('back-button').addEventListener('click', () => {
+                    displayArticles(allNewsArticles); // Show all articles or last filtered ones
+                    updateActiveFilter('all'); // Reset filter highlight
+                });
+
+                document.getElementById('summarize-button').addEventListener('click', async () => {
+                     const summarizeBtn = document.getElementById('summarize-button');
+                     const summaryOutput = document.getElementById('summary-output');
+                     const summaryErrorDiv = document.getElementById('summary-error');
+
+                     summaryOutput.innerHTML = '';
+                     summaryErrorDiv.innerHTML = '';
+                     summarizeBtn.disabled = true;
+                     summarizeBtn.textContent = 'در حال خلاصه‌سازی...';
+                     summarizeBtn.classList.add('bg-gray-400');
+                     summarizeBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+
+                     try {
+                         const articleContent = article.content; // محتوای مقاله را برای خلاصه‌سازی ارسال می‌کنیم.
+                         const functionUrl = '/.netlify/functions/gemini-proxy'; // تغییر به gemini-proxy
+
+                         const payload = { prompt: `متن زیر را به فارسی و به صورت خلاصه (حداکثر 5 خط) برای یک خبرنامه مختصر و مفید بازنویسی کن. فقط متن خلاصه را ارائه بده و از هیچ مقدمه یا موخره ای استفاده نکن:\n\n${articleContent}` };
+                         
+                         const response = await fetch(functionUrl, {
+                             method: 'POST',
+                             headers: { 'Content-Type': 'application/json' },
+                             body: JSON.stringify(payload),
+                         });
+
+                         if (!response.ok) {
+                             const errorData = await response.json();
+                             throw new Error(errorData.error.details || errorData.error.message || 'دریافت خلاصه از API با خطا مواجه شد');
+                         }
+
+                         const result = await response.json();
+                         if (result.response) { // تغییر از result.summary به result.response
+                             summaryOutput.innerHTML = `<div class="bg-blue-50 p-4 rounded-lg border border-blue-200 mt-4"><p class="font-bold">خلاصه هوش مصنوعی:</p><p>${result.response}</p></div>`;
+                             // Add to Firestore history (optional, if you want summarization history)
+                             await addDoc(collection(db, HISTORY_COLLECTION_PATH), {
+                                 articleId: article.id,
+                                 articleTitle: article.title,
+                                 summarizedContent: result.response,
+                                 timestamp: serverTimestamp(),
+                                 type: 'summarization'
+                             });
+                         } else {
+                             throw new Error('خلاصه‌ای از API دریافت نشد.');
+                         }
+                     } catch (error) {
+                         summaryErrorDiv.innerHTML = `<div class="bg-red-50 p-4 rounded-lg border border-red-200 mt-4">خطا در خلاصه‌سازی: ${error.message}. لطفاً از تنظیم بودن Netlify Function و API Key اطمینان حاصل کنید.</div>`;
+                     } finally {
+                         summarizeBtn.disabled = false;
+                         summarizeBtn.textContent = 'خلاصه‌سازی با هوش مصنوعی';
+                         summarizeBtn.classList.remove('bg-gray-400');
+                         summarizeBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                     }
+                 });
+            }
+
+            /* تابع برای ساخت دکمه‌های فیلتر */
+            function createCategoryFilters() {
+                // Categories will be dynamic based on fetched news
+                const categories = ['all', ...new Set(allNewsArticles.map(a => a.category))];
+                categoryFiltersContainer.innerHTML = ''; // Clear previous buttons
+                categories.forEach(category => {
+                    const button = document.createElement('button');
+                    button.textContent = category === 'all' ? 'همه دسته‌بندی‌ها' : category;
+                    button.dataset.category = category;
+                    button.className = `w-full text-right p-3 rounded-lg transition-colors duration-200 filter-btn`;
+                    button.classList.add(category === 'all' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-800 hover:bg-green-200');
+                    button.addEventListener('click', () => filterByCategory(category));
+                    categoryFiltersContainer.appendChild(button);
+                });
+            }
+            
+            /* تابع برای به‌روزرسانی ظاهر دکمه فیلتر فعال */
+            function updateActiveFilter(activeCategory) {
+                document.querySelectorAll('.filter-btn').forEach(btn => {
+                    if (btn.dataset.category === activeCategory) {
+                        btn.classList.remove('bg-gray-200', 'text-gray-800', 'hover:bg-green-200');
+                        btn.classList.add('bg-green-600', 'text-white');
+                    } else {
+                        btn.classList.remove('bg-green-600', 'text-white');
+                        btn.classList.add('bg-gray-200', 'text-gray-800', 'hover:bg-green-200');
+                    }
+                });
+            }
+
+            /* تابع برای فیلتر کردن بر اساس دسته‌بندی */
+            function filterByCategory(category) {
+                searchInput.value = '';
+                const filteredArticles = category === 'all' 
+                    ? allNewsArticles
+                    : allNewsArticles.filter(a => a.category === category);
+                displayArticles(filteredArticles);
+                updateActiveFilter(category);
+            }
+
+            /* تابع برای فیلتر کردن بر اساس جستجو */
+            function filterBySearch(searchTerm) {
+                const term = searchTerm.toLowerCase();
+                const filteredArticles = allNewsArticles.filter(a => 
+                    a.title.toLowerCase().includes(term) ||
+                    (a.summary && a.summary.toLowerCase().includes(term)) ||
+                    (a.content && a.content.toLowerCase().includes(term))
+                );
+                displayArticles(filteredArticles);
+                updateActiveFilter(null); // Clear category filter highlight
+            }
+
+            /* تابع برای ساخت نمودار */
+            function createChart() {
+                if (categoryChart) {
+                    categoryChart.destroy(); // Destroy existing chart if it exists
+                }
+                const ctx = document.getElementById('category-chart').getContext('2d');
+                const categories = [...new Set(allNewsArticles.map(a => a.category || 'متفرقه'))]; // Use 'متفرقه' for articles without category
+                const data = categories.map(cat => allNewsArticles.filter(a => (a.category || 'متفرقه') === cat).length);
+                
+                const backgroundColors = [
+                    '#4CAF50', '#8BC34A', '#CDDC39', '#FFC107', '#FF9800', '#00BCD4', '#2196F3', '#3F51B5', '#673AB7', '#9C27B0'
+                ]; // More colors
+
+                categoryChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: categories,
+                        datasets: [{
+                            label: 'تعداد اخبار',
+                            data: data,
+                            backgroundColor: backgroundColors.slice(0, categories.length),
+                            borderColor: '#F8F7F4',
+                            borderWidth: 4,
+                            hoverOffset: 10
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    font: {
+                                        family: 'Vazirmatn'
+                                    },
+                                    padding: 20
+                                }
+                            },
+                            tooltip: {
+                                bodyFont: {
                                     family: 'Vazirmatn'
                                 },
-                                padding: 20
+                                titleFont: {
+                                    family: 'Vazirmatn'
+                                }
                             }
                         },
-                        tooltip: {
-                            bodyFont: {
-                                family: 'Vazirmatn'
-                            },
-                            titleFont: {
-                                family: 'Vazirmatn'
+                        onClick: (event, elements) => {
+                            if (elements.length > 0) {
+                                const chartElement = elements[0];
+                                const category = categoryChart.data.labels[chartElement.index];
+                                filterByCategory(category);
                             }
                         }
-                    },
-                    onClick: (event, elements) => {
-                        if (elements.length > 0) {
-                            const chartElement = elements[0];
-                            const category = categoryChart.data.labels[chartElement.index];
-                            filterByCategory(category);
-                        }
                     }
+                });
+            }
+
+            // Message Box Helper
+            function showMessageBox(message, type = 'info') {
+                clearTimeout(this.messageBoxTimeout); // Use 'this' if messageBoxTimeout is on an object, otherwise use global
+                messageBoxText.textContent = message;
+                messageBox.classList.remove('bg-red-600', 'bg-yellow-600', 'bg-blue-600');
+                
+                if (type === 'error') messageBox.classList.add('bg-red-600');
+                else if (type === 'warning') messageBox.classList.add('bg-yellow-600');
+                else messageBox.classList.add('bg-blue-600');
+                
+                messageBox.style.display = 'block';
+                // Force reflow to restart animation
+                void messageBox.offsetWidth; 
+                messageBox.classList.add('animate-fade-in-down'); // Assuming you have this animation in CSS
+
+                if (type !== 'error') {
+                   this.messageBoxTimeout = setTimeout(() => { // Using 'this' for timeout
+                       messageBox.style.display = 'none';
+                       messageBox.classList.remove('animate-fade-in-down');
+                   }, 5000);
                 }
-            });
-        }
+            }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            displayArticles(newsData);
-            createCategoryFilters();
-            createChart();
+
+            // --- Firestore Data Fetching ---
+            function listenForNewsArticles() {
+                if (currentNewsSnapshotUnsubscribe) {
+                    currentNewsSnapshotUnsubscribe(); // Unsubscribe from previous listener
+                }
+
+                newsLoadingIndicator.style.display = 'block';
+                newsErrorMessage.style.display = 'none';
+                articleGrid.innerHTML = '';
+
+                // Query for news articles (ordered by timestamp)
+                const q = query(collection(db, NEWS_COLLECTION_PATH), orderBy('timestamp', 'desc'));
+
+                currentNewsSnapshotUnsubscribe = onSnapshot(q, (snapshot) => {
+                    newsLoadingIndicator.style.display = 'none';
+                    if (snapshot.empty) {
+                        newsErrorMessage.textContent = 'هنوز خبری برای نمایش وجود ندارد.';
+                        newsErrorMessage.style.display = 'block';
+                        allNewsArticles = [];
+                    } else {
+                        newsErrorMessage.style.display = 'none';
+                        allNewsArticles = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        displayArticles(allNewsArticles);
+                        createCategoryFilters(); // Re-create filters based on new data
+                        createChart(); // Re-create chart based on new data
+                    }
+                }, (error) => {
+                    console.error("DEV_LOG: Error fetching news articles:", error);
+                    newsLoadingIndicator.style.display = 'none';
+                    newsErrorMessage.textContent = `خطا در دریافت اخبار: ${error.message}.`;
+                    newsErrorMessage.style.display = 'block';
+                    showMessageBox('خطا در بارگذاری اخبار از پایگاه داده.', 'error');
+                });
+            }
+
+            // Initial calls after Firebase is ready
+            listenForNewsArticles();
             searchInput.addEventListener('input', (e) => filterBySearch(e.target.value));
-        });
 
+            // PWA Service Worker Registration
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/service-worker.js')
+                        .then(registration => {
+                            console.log('SW registered: ', registration);
+                        })
+                        .catch(registrationError => {
+                            console.log('SW registration failed: ', registrationError);
+                        });
+                });
+            }
+        })();
     </script>
 </body>
 </html>
